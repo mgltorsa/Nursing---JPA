@@ -17,5 +17,6 @@ public interface ISupplyService {
 	//NOTE: Punto 1c)
 	public List<Supply> findByQuantityRange(int minimum, int maximum);
 	public List<Supply> findAll();
+	public void deleteAll();
     
 }

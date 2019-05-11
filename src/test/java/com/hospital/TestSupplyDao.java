@@ -1,7 +1,9 @@
 package com.hospital;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDate;
@@ -73,6 +75,57 @@ public class TestSupplyDao {
 
 //		funciona y trae suministros con sus ids : 
 		supply = patientService.findByDocument(patient.getDocument()).getSupplies().get(0);
+	}
+
+	@Test
+	public void testSave() {
+		Supply oldSupply = new Supply(medicine, 2, patient, LocalDate.now(), "pathology-1");
+
+		supplyService.saveOrUpdate(oldSupply);
+
+		Supply newSupply = supplyService.findById(oldSupply.getConsecutive());
+
+		supplyService.delete(oldSupply);
+
+		assertNotNull(newSupply);
+		assertEquals(oldSupply.getConsecutive(), newSupply.getConsecutive());
+		assertEquals(oldSupply.getDate(), newSupply.getDate());
+		assertEquals(oldSupply.getMedicine().getConsecutive(), newSupply.getMedicine().getConsecutive());
+		assertEquals(oldSupply.getPathology(), newSupply.getPathology());
+		assertEquals(oldSupply.getPatient().getDocument(), newSupply.getPatient().getDocument());
+
+	}
+
+	@Test
+	public void testFindById() {
+		Supply expected = supply;
+		Supply actual = supplyService.findById(expected.getConsecutive());
+		assertEquals(expected.getConsecutive(), actual.getConsecutive());
+		assertEquals(expected.getDate(), actual.getDate());
+		assertEquals(expected.getMedicine().getConsecutive(), actual.getMedicine().getConsecutive());
+		assertEquals(expected.getPathology(), actual.getPathology());
+		assertEquals(expected.getPatient().getDocument(), actual.getPatient().getDocument());
+
+	}
+
+	@Test
+	public void testFindByMedicine() {
+		List<Supply> actual = supplyService.findByMedicineName(supply.getMedicine().getName());
+		
+		assertNotNull(actual);
+		assertNotEquals(0, actual);
+		assertTrue(actual.stream().anyMatch(expected -> 
+		
+		expected.getConsecutive().equals(supply.getConsecutive()) &&
+		expected.getDate().equals(supply.getDate()) &&
+		expected.getMedicine().getConsecutive().equals(supply.getMedicine().getConsecutive())&&
+		expected.getPathology().equals(supply.getPathology())&&
+		expected.getPatient().getDocument().equals(supply.getPatient().getDocument())
+
+				
+		));
+		
+		
 	}
 
 	@Test

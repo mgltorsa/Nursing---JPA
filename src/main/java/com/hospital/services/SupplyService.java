@@ -43,6 +43,21 @@ public class SupplyService implements ISupplyService {
 
 	@Override
 	@Transactional
+	public void deleteAll() {
+		
+		List<Supply> supplies =dao.findAll();
+		
+		for(Supply supply : supplies) {
+			
+			dao.remove(supply);
+			
+		}
+		
+		
+	}
+
+	@Override
+	@Transactional
 	public List<Supply> findAll() {
 		return dao.findAll();
 	}
@@ -56,7 +71,11 @@ public class SupplyService implements ISupplyService {
 	@Override
 	@Transactional
 	public Supply findById(Long consecutive) {
-		return dao.findById(consecutive);
+		Supply supply = dao.findById(consecutive);
+		if (supply == null) {
+			throw new IllegalStateException("Entity doesn't exists in db");
+		}
+		return supply;
 	}
 
 	@Override

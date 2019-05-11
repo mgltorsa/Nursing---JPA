@@ -37,7 +37,8 @@ public class SupplyDao implements ISupplyDao {
 		entityManager.remove(supply);
 		return supply;
 	}
-
+	
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Supply> findAll() {
