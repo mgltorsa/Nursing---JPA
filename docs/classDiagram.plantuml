@@ -1,0 +1,23 @@
+package com.hospital.model{
+    class Patient
+
+
+    class Supply
+
+    class Attention
+
+    class Medicine
+
+    class Inventary
+
+
+}
+
+
+    Patient "1" -- "*" Supply : -supplies
+    Attention "*" -- "1" Patient : -patients
+    Supply "*" -- "1" Attention : -attentions
+    Supply "*" -- "1" Medicine : -medicines
+    Inventary "*" -- "1" Medicine : -medicines
+
+

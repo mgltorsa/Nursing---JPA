@@ -1,0 +1,41 @@
+activate objAlias
+
+
+activate Main
+
+
+activate Controller
+
+
+Main -> Controller : Auth
+
+
+create Mouse
+
+Controller -> Mouse : create(P:String)
+
+activate Mouse
+
+Mouse --> Controller : instace
+
+deactivate Mouse
+
+
+Controller -> Mouse : test
+activate Mouse
+
+
+Mouse --> Controller : response
+deactivate Mouse
+
+
+Controller --> Main : response
+
+deactivate Main
+deactivate Controller
+
+
+
+
+
+
