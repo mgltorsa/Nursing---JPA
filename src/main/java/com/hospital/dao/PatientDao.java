@@ -54,18 +54,18 @@ public class PatientDao implements IPatientDao {
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Patient> findByName(String names) {
-		String q = "select p from Patient p where p.name = :arg";
+		String q = "select p from Patient p where p.names = :names";
 		Query query = entityManager.createQuery(q);
-		query.setParameter("arg", names);
+		query.setParameter("names", names);
 		return query.getResultList();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Patient> findByLastName(String lastnames) {
-		String q = "select p from Patient p where p.lastnames = :arg";
+		String q = "select p from Patient p where p.lastnames = :lastNames";
 		Query query = entityManager.createQuery(q);
-		query.setParameter("arg", lastnames);
+		query.setParameter("lastNames", lastnames);
 		return query.getResultList();
 	}
 
@@ -84,17 +84,27 @@ public class PatientDao implements IPatientDao {
 		return list;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<Patient> findByAttentionsMoreThanLastMonth(Long quantity) {
 
+		//NOTE:
+		//Old consult
+		//String q = "select t from Patient t where ( select u from UrgencyAttention u where u.patient.document = t.document and u.date between :lastMonth and :currentDate ) < :quantity"
+		
 		LocalDate lastMonth = LocalDate.now().minusDays(30);
-		String q = "select p from Patient p where ( select count(a.consecutive) from UrgencyAttention a where a.patient.document = p.document and a.date between :lastMonth and :currentDate ) < :quantity";
-		Query query = entityManager.createQuery(q);
-		query.setParameter("lastMonth", lastMonth);
-		query.setParameter("currentDate", LocalDate.now());
-		query.setParameter("quantity", quantity );
-		return query.getResultList();
+		List<Patient> patients = findAll();
+		List<Patient> result = new ArrayList<>();
+		for(Patient patient : patients) {
+			if(patient.getAttentions().stream().anyMatch(
+					
+			attention -> attention.getDate().compareTo(lastMonth)>=0 && attention.getDate().compareTo(LocalDate.now())<=0 
+			
+			)) {
+				result.add(patient);
+			}
+		}
+		
+		return result;
 	}
 
 }

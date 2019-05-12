@@ -3,7 +3,6 @@ package com.hospital;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDate;
@@ -77,6 +76,7 @@ public class TestSupplyDao {
 		supply = patientService.findByDocument(patient.getDocument()).getSupplies().get(0);
 	}
 
+	
 	@Test
 	public void testSave() {
 		Supply oldSupply = new Supply(medicine, 2, patient, LocalDate.now(), "pathology-1");
@@ -94,6 +94,24 @@ public class TestSupplyDao {
 		assertEquals(oldSupply.getPathology(), newSupply.getPathology());
 		assertEquals(oldSupply.getPatient().getDocument(), newSupply.getPatient().getDocument());
 
+	}
+	
+	@Test
+	public void initTestMerge() {
+		
+		Supply oldSupply = supply;
+		oldSupply.setObservations("observations-1");
+		supplyService.saveOrUpdate(oldSupply);
+
+		Supply newSupply = supplyService.findById(oldSupply.getConsecutive());
+		
+		assertNotNull(newSupply);
+		assertEquals("observations-1", newSupply.getObservations());
+		assertEquals(oldSupply.getConsecutive(), newSupply.getConsecutive());
+		assertEquals(oldSupply.getDate(), newSupply.getDate());
+		assertEquals(oldSupply.getMedicine().getConsecutive(), newSupply.getMedicine().getConsecutive());
+		assertEquals(oldSupply.getPathology(), newSupply.getPathology());
+		assertEquals(oldSupply.getPatient().getDocument(), newSupply.getPatient().getDocument());
 	}
 
 	@Test

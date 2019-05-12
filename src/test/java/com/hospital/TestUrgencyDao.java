@@ -1,6 +1,7 @@
 package com.hospital;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDate;
@@ -48,7 +49,6 @@ public class TestUrgencyDao {
 	@Before
 	public void init() {
 
-
 		Medicine medicine = new Medicine(12l, "name", "genericName", "laboratory", "indications");
 		InventaryMedicine inventary = new InventaryMedicine(medicine, 10, "ubication-1", LocalDate.now().plusDays(120));
 		InventaryMedicine inventary2 = new InventaryMedicine(medicine, 15, "ubication-2",
@@ -74,7 +74,11 @@ public class TestUrgencyDao {
 		patient.getAttentions().add(attention2);
 
 		medicineService.saveOrUpdate(medicine);
+		// Patient service guarda en cascada
 		patientService.saveOrUpdate(patient);
+
+		// Obteniendo el attention con id
+		attention = patientService.findByDocument(patient.getDocument()).getAttentions().get(0);
 	}
 
 	@Test
@@ -93,6 +97,79 @@ public class TestUrgencyDao {
 		assertEquals(2, urgencies.size());
 	}
 
+	@Test
+	public void testSave() {
+		UrgencyAttention expected = new UrgencyAttention(patient, LocalDate.now(), "generalDescription-3",
+				"procedure-3", true);
+
+		urgencyService.saveOrUpdate(expected);
+		UrgencyAttention ur = urgencyService.findById(expected.getConsecutive());
+
+		assertNotNull(ur);
+		assertEquals(expected.getConsecutive(), ur.getConsecutive());
+		assertEquals(expected.getDate(), ur.getDate());
+		assertEquals(expected.getPatient().getDocument(), ur.getPatient().getDocument());
+		assertEquals(expected.getForwarded(), ur.getForwarded());
+		assertEquals(expected.getGeneralDescription(), ur.getGeneralDescription());
+		assertEquals(expected.getProcedure(), ur.getProcedure());
+		assertEquals(expected.getForwardedPlace(), ur.getForwardedPlace());
+	}
+	
+	@Test
+	public void testMerge() {
+		UrgencyAttention expected = attention;
+		expected.setProcedure("test-procedure");
+
+		urgencyService.saveOrUpdate(expected);
+		UrgencyAttention ur = urgencyService.findById(expected.getConsecutive());
+
+		assertNotNull(ur);
+		assertEquals(expected.getConsecutive(), ur.getConsecutive());
+		assertEquals(expected.getDate(), ur.getDate());
+		assertEquals(expected.getPatient().getDocument(), ur.getPatient().getDocument());
+		assertEquals(expected.getForwarded(), ur.getForwarded());
+		assertEquals(expected.getGeneralDescription(), ur.getGeneralDescription());
+		assertEquals(expected.getProcedure(), ur.getProcedure());
+		assertEquals(expected.getForwardedPlace(), ur.getForwardedPlace());
+	}
+
+	@Test
+	public void testFindById() {
+		UrgencyAttention ur = urgencyService.findById(attention.getConsecutive());
+
+		assertNotNull(ur);
+		assertEquals(attention.getConsecutive(), ur.getConsecutive());
+		assertEquals(attention.getDate(), ur.getDate());
+		assertEquals(attention.getPatient().getDocument(), ur.getPatient().getDocument());
+		assertEquals(attention.getForwarded(), ur.getForwarded());
+		assertEquals(attention.getGeneralDescription(), ur.getGeneralDescription());
+		assertEquals(attention.getProcedure(), ur.getProcedure());
+		assertEquals(attention.getForwardedPlace(), ur.getForwardedPlace());
+
+	}
+
+	@Test
+	public void testFindByPatient() {
+		String debug = "findByPatient\n";
+
+		List<UrgencyAttention> urgencies = urgencyService.findByPatient(patient.getDocument());
+
+		for (UrgencyAttention u : urgencies) {
+			debug += u + "\n";
+		}
+
+		log.info(debug);
+
+		assertEquals(2, urgencies.size());
+
+		// REVIEW: List contains the attention in any order
+		assertTrue(urgencies.stream()
+				.anyMatch(ur -> attention.getConsecutive().equals(ur.getConsecutive())
+						&& attention.getPatient().getDocument().equals(ur.getPatient().getDocument())
+						&& attention.getForwarded().equals(ur.getForwarded())
+						&& attention.getGeneralDescription().equals(ur.getGeneralDescription())));
+	}
+
 	// NOTE: Consulta punto 1b)
 	@Test
 	public void testFindBetweenDates() {
@@ -102,28 +179,26 @@ public class TestUrgencyDao {
 		String debug = "findBetweenDates\n";
 
 		List<UrgencyAttention> urgencies = urgencyService.findBetweenDates(since, until);
-		
-		for(UrgencyAttention u : urgencies) {
-			debug+=u+"\n";
+
+		for (UrgencyAttention u : urgencies) {
+			debug += u + "\n";
 		}
 
-		
 		log.info(debug);
-		
+
 		assertEquals(2, urgencies.size());
-		
-		//REVIEW: List contains the attention in any order
-		assertTrue(urgencies.stream().anyMatch(ur -> 
-				attention.getConsecutive().equals(ur.getConsecutive())&&
-				attention.getPatient().getDocument().equals(ur.getPatient().getDocument())&&
-				attention.getForwarded().equals(ur.getForwarded())&&
-				attention.getGeneralDescription().equals(ur.getGeneralDescription())
-				));
-		
+
+		// REVIEW: List contains the attention in any order
+		assertTrue(urgencies.stream()
+				.anyMatch(ur -> attention.getConsecutive().equals(ur.getConsecutive())
+						&& attention.getPatient().getDocument().equals(ur.getPatient().getDocument())
+						&& attention.getForwarded().equals(ur.getForwarded())
+						&& attention.getGeneralDescription().equals(ur.getGeneralDescription())));
 
 	}
 
 	@After
 	public void destroy() {
+		urgencyService.delete(attention);
 	}
 }

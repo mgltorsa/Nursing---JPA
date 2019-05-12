@@ -23,9 +23,10 @@ public class SupplyService implements ISupplyService {
 	@Transactional
 	public void saveOrUpdate(Supply supply) {
 
-		if (supply.getConsecutive() == null || findById(supply.getConsecutive()) != null) {
+		if (supply.getConsecutive() == null) {
 			dao.persist(supply);
-		} else {
+		} 
+		else {
 			dao.merge(supply);
 		}
 	}

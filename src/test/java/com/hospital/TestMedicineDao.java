@@ -128,6 +128,38 @@ public class TestMedicineDao {
 		));
 
 	}
+	
+	@Test
+	public void testFindByGenericName() {
+		List<Medicine> medicines = medicineService.findByGenericName(medicine.getGenericName());
+
+		assertNotNull("medicines was null", medicines);
+		assertNotNull("array of medicines was null", medicines);
+		assertEquals(1, medicines.size());
+		assertTrue(medicines.stream().allMatch(item -> 
+		
+		medicine.getName().equals(item.getName())
+		
+		));
+
+	}
+	
+	@Test
+	public void testFindByLaboratory() {
+		List<Medicine> medicines = medicineService.findByLaboratory(medicine.getLaboratory());
+
+		assertNotNull("medicines was null", medicines);
+		assertNotNull("array of medicines was null", medicines);
+		assertEquals(2, medicines.size());
+		assertTrue(medicines.stream().anyMatch(item -> 
+		
+		medicine.getName().equals(item.getName())
+		
+		));
+
+	}
+	
+	
 
 	// NOTE: Consulta punto 2b)
 
