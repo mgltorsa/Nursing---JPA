@@ -43,10 +43,13 @@ public class TestPatientDao {
 		attention = new UrgencyAttention(patient, LocalDate.now(), "general-description-1", "procedure-1", true);
 		UrgencyAttention attention2 = new UrgencyAttention(patient, LocalDate.now(), "general-description-2",
 				"procedure-2", false);
+		UrgencyAttention attention3 = new UrgencyAttention(patient, LocalDate.now().minusDays(10), "general-description-3", "procedure", false);
 
 		patient.getAttentions().add(attention);
 
 		patient.getAttentions().add(attention2);
+		
+		patient.getAttentions().add(attention3);
 
 		patientService.saveOrUpdate(patient);
 
@@ -126,7 +129,7 @@ public class TestPatientDao {
 		log.info(debug);
 		assertNotNull(list);
 		assertEquals(1, list.size());
-		assertTrue(list.stream().allMatch(item -> item.getSecond() == 2));
+		assertTrue(list.stream().allMatch(item -> item.getSecond() == 3));
 
 	}
 
@@ -178,7 +181,7 @@ public class TestPatientDao {
 	@Test
 	public void testFindByAttentionsMoreThanLastMonth() {
 
-		List<Patient> patients = patientService.findByAttentionsMoreThanLastMonth(0l);
+		List<Patient> patients = patientService.findByAttentionsMoreThanLastMonth(1l);
 		String debug = "Patients -> \n";
 
 		for (Patient patient : patients) {
@@ -193,7 +196,7 @@ public class TestPatientDao {
 
 		patient.getDocument().equals(p.getDocument()) && patient.getNames().equals(p.getNames())
 				&& patient.getLastnames().equals(p.getLastnames()) && patient.getState().equals(p.getState())
-				&& p.getAttentions().size() > 1
+				&& p.getAttentions().size() == 3
 
 		));
 

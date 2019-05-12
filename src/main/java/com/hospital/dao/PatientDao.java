@@ -84,27 +84,18 @@ public class PatientDao implements IPatientDao {
 		return list;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public List<Patient> findByAttentionsMoreThanLastMonth(Long quantity) {
-
-		//NOTE:
-		//Old consult
-		//String q = "select t from Patient t where ( select u from UrgencyAttention u where u.patient.document = t.document and u.date between :lastMonth and :currentDate ) < :quantity"
+	public List<Patient> findByAttentionsMoreThanLastMonth(Long quantity) {		
 		
-		LocalDate lastMonth = LocalDate.now().minusDays(30);
-		List<Patient> patients = findAll();
-		List<Patient> result = new ArrayList<>();
-		for(Patient patient : patients) {
-			if(patient.getAttentions().stream().anyMatch(
-					
-			attention -> attention.getDate().compareTo(lastMonth)>=0 && attention.getDate().compareTo(LocalDate.now())<=0 
-			
-			)) {
-				result.add(patient);
-			}
-		}
+		LocalDate lastMoth = LocalDate.now().minusDays(30);
+		String q = "select t from Patient t where ( select count(u) from UrgencyAttention u where u.patient.document = t.document and u.date between :lastMonth and :currentDate ) > :quantity";
+		Query query = entityManager.createQuery(q);
+		query.setParameter("lastMonth", lastMoth);
+		query.setParameter("currentDate", LocalDate.now());
+		query.setParameter("quantity", quantity);
 		
-		return result;
+		return query.getResultList();
 	}
 
 }
