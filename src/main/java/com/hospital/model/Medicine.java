@@ -48,7 +48,7 @@ public class Medicine implements Serializable {
 	@OneToMany(mappedBy = "medicine", orphanRemoval = true, cascade = CascadeType.ALL)
 	private List<InventaryMedicine> inventaries = new ArrayList<>();
 
-	@OneToMany(mappedBy = "medicine", orphanRemoval = true)
+	@OneToMany(mappedBy = "medicine", orphanRemoval = true, cascade = CascadeType.ALL)
 	private List<Supply> supplies = new ArrayList<>();
 
 	public Medicine() {

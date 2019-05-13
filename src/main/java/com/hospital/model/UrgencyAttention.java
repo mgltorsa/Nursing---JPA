@@ -36,7 +36,7 @@ public class UrgencyAttention {
 	private LocalDate date;
 
 	@NonNull
-	@ManyToOne(optional = false)
+	@ManyToOne(cascade = CascadeType.ALL)
 	private Patient patient;
 
 	@NonNull

@@ -1,4 +1,4 @@
-package com.hospital;
+package com.hospital.dao;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -6,6 +6,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDate;
 import java.util.List;
+
+import javax.transaction.Transactional;
 
 import org.junit.After;
 import org.junit.Before;
@@ -16,14 +18,13 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.hospital.dao.IUrgencyAttentionDao;
 import com.hospital.model.InventaryMedicine;
 import com.hospital.model.Medicine;
 import com.hospital.model.Patient;
 import com.hospital.model.Supply;
 import com.hospital.model.UrgencyAttention;
-import com.hospital.services.IMedicineService;
-import com.hospital.services.IPatientService;
-import com.hospital.services.IUrgencyService;
+
 
 import lombok.extern.log4j.Log4j2;
 
@@ -31,16 +32,11 @@ import lombok.extern.log4j.Log4j2;
 @ContextConfiguration("/applicationContext.xml")
 @Rollback(false)
 @Log4j2
-public class TestUrgencyDao {
+public class UnitTestUrgencyDao {
 
 	@Autowired
-	private IUrgencyService urgencyService;
-
-	@Autowired
-	private IPatientService patientService;
-
-	@Autowired
-	private IMedicineService medicineService;
+	private IUrgencyAttentionDao dao;
+	
 
 	private UrgencyAttention attention;
 
@@ -73,20 +69,17 @@ public class TestUrgencyDao {
 		patient.getAttentions().add(attention);
 		patient.getAttentions().add(attention2);
 
-		medicineService.saveOrUpdate(medicine);
-		// Patient service guarda en cascada
-		patientService.saveOrUpdate(patient);
-
-		// Obteniendo el attention con id
-		attention = patientService.findByDocument(patient.getDocument()).getAttentions().get(0);
+		dao.persist(attention);
+		dao.persist(attention2);
 	}
 
 	@Test
+	@Transactional
 	public void testFindAll() {
 
 		String debug = "findAll -> \n";
 
-		List<UrgencyAttention> urgencies = urgencyService.findAll();
+		List<UrgencyAttention> urgencies = dao.findAll();
 
 		for (UrgencyAttention u : urgencies) {
 			debug += u + "\n";
@@ -98,12 +91,13 @@ public class TestUrgencyDao {
 	}
 
 	@Test
+	@Transactional
 	public void testSave() {
 		UrgencyAttention expected = new UrgencyAttention(patient, LocalDate.now(), "generalDescription-3",
 				"procedure-3", true);
 
-		urgencyService.saveOrUpdate(expected);
-		UrgencyAttention ur = urgencyService.findById(expected.getConsecutive());
+		dao.persist(expected);
+		UrgencyAttention ur = dao.findById(expected.getConsecutive());
 
 		assertNotNull(ur);
 		assertEquals(expected.getConsecutive(), ur.getConsecutive());
@@ -116,12 +110,13 @@ public class TestUrgencyDao {
 	}
 	
 	@Test
+	@Transactional
 	public void testMerge() {
 		UrgencyAttention expected = attention;
 		expected.setProcedure("test-procedure");
 
-		urgencyService.saveOrUpdate(expected);
-		UrgencyAttention ur = urgencyService.findById(expected.getConsecutive());
+		dao.persist(expected);
+		UrgencyAttention ur = dao.findById(expected.getConsecutive());
 
 		assertNotNull(ur);
 		assertEquals(expected.getConsecutive(), ur.getConsecutive());
@@ -134,8 +129,9 @@ public class TestUrgencyDao {
 	}
 
 	@Test
+	@Transactional
 	public void testFindById() {
-		UrgencyAttention ur = urgencyService.findById(attention.getConsecutive());
+		UrgencyAttention ur = dao.findById(attention.getConsecutive());
 
 		assertNotNull(ur);
 		assertEquals(attention.getConsecutive(), ur.getConsecutive());
@@ -149,10 +145,11 @@ public class TestUrgencyDao {
 	}
 
 	@Test
+	@Transactional
 	public void testFindByPatient() {
 		String debug = "findByPatient\n";
 
-		List<UrgencyAttention> urgencies = urgencyService.findByPatient(patient.getDocument());
+		List<UrgencyAttention> urgencies = dao.findByPatient(patient.getDocument());
 
 		for (UrgencyAttention u : urgencies) {
 			debug += u + "\n";
@@ -172,13 +169,14 @@ public class TestUrgencyDao {
 
 	// NOTE: Consulta punto 1b)
 	@Test
+	@Transactional
 	public void testFindBetweenDates() {
 		LocalDate since = LocalDate.now().minusDays(1);
 		LocalDate until = LocalDate.now().plusDays(1);
 
 		String debug = "findBetweenDates\n";
 
-		List<UrgencyAttention> urgencies = urgencyService.findBetweenDates(since, until);
+		List<UrgencyAttention> urgencies = dao.findBetweenDates(since, until);
 
 		for (UrgencyAttention u : urgencies) {
 			debug += u + "\n";
@@ -199,6 +197,6 @@ public class TestUrgencyDao {
 
 	@After
 	public void destroy() {
-		urgencyService.delete(attention);
+		dao.remove(attention);
 	}
 }

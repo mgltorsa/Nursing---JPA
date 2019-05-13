@@ -31,7 +31,7 @@ public class Supply implements Serializable {
 	private Long consecutive;
 
 	@NonNull
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "medicine_consecutive", referencedColumnName = "consecutive")
 	private Medicine medicine;
 
@@ -39,7 +39,7 @@ public class Supply implements Serializable {
 	private Integer quantity;
 
 	@NonNull
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "patient_document", referencedColumnName = "document")
 	private Patient patient;
 

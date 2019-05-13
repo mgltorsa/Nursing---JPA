@@ -1,4 +1,4 @@
-package com.hospital;
+package com.hospital.dao;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -9,6 +9,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,9 +20,9 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.hospital.dao.IMedicineDao;
 import com.hospital.model.InventaryMedicine;
 import com.hospital.model.Medicine;
-import com.hospital.services.IMedicineService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -28,11 +30,11 @@ import lombok.extern.log4j.Log4j2;
 @ContextConfiguration("/applicationContext.xml")
 @Rollback(false)
 @Log4j2
-public class TestMedicineDao {
+public class UnitTestMedicineDao {
 
 	@Autowired
-	private IMedicineService medicineService;
-
+	private IMedicineDao dao;	
+	
 	private Medicine medicine;
 
 	private Medicine medicine2;
@@ -52,59 +54,35 @@ public class TestMedicineDao {
 		medicine.getInventaries().add(inventary);
 		medicine2.getInventaries().add(inventary2);
 
-		medicineService.saveOrUpdate(medicine);
-		medicineService.saveOrUpdate(medicine2);
+		dao.persist(medicine);
+		dao.persist(medicine2);
+		
+		
+				
 
 	}
-
+	
 	@Test
+	@Transactional
 	public void testSave(){
 
 		Medicine m = new Medicine(3l, "name", "genericName", "laboratory", "indications");
 
-		medicineService.saveOrUpdate(m);
+		dao.persist(m);
 
-		Medicine newMedicine = medicineService.findById(3l);
+		Medicine newMedicine = dao.findById(3l);
 
 		assertEquals(m.getConsecutive(),newMedicine.getConsecutive());
 		assertEquals(m.getName(),newMedicine.getName());
 		assertEquals(m.getGenericName(),newMedicine.getGenericName());
 		assertEquals(m.getLaboratory(),newMedicine.getLaboratory());
 	}
-
+	
 	@Test
-	public void testMerge(){
-		LocalDate expirationDate = LocalDate.now().plusYears(1);
-		InventaryMedicine im = new InventaryMedicine(medicine, 14, "alaska", expirationDate);
-		
-		Medicine medicine = medicineService.findById(1l);
-		medicine.getInventaries().add(im);
-
-		medicineService.saveOrUpdate(medicine);
-
-		Medicine newMedicine = medicineService.findById(medicine.getConsecutive());
-
-		assertEquals(medicine.getConsecutive(),newMedicine.getConsecutive());
-		assertEquals(medicine.getName(),newMedicine.getName());
-		assertEquals(medicine.getGenericName(),newMedicine.getGenericName());
-		assertEquals(medicine.getLaboratory(),newMedicine.getLaboratory());
-
-	}
-
-	@Test
-	public void testFindAll() {
-
-		List<Medicine> medicines = medicineService.findAll();
-
-		assertNotNull(medicines);
-		assertNotEquals(medicines.size(), 0);
-		assertEquals(medicines.size(), 2);
-	}
-
-	@Test
+	@Transactional
 	public void testFindById() {
 
-		Medicine medicine = medicineService.findById(this.medicine.getConsecutive());
+		Medicine medicine = dao.findById(this.medicine.getConsecutive());
 
 		assertNotNull("medicine was null", medicine);
 		assertEquals(this.medicine.getConsecutive(), medicine.getConsecutive());
@@ -113,10 +91,24 @@ public class TestMedicineDao {
 		assertEquals(this.medicine.getLaboratory(), medicine.getLaboratory());
 		assertEquals(this.medicine.getIndications(), medicine.getIndications());
 	}
+	
+	@Test
+	@Transactional
+	public void testFindAll() {
+
+		List<Medicine> medicines = dao.findAll();
+
+		assertNotNull(medicines);
+		assertNotEquals(medicines.size(), 0);
+		assertEquals(medicines.size(), 2);
+	}
+	
+	
 
 	@Test
+	@Transactional
 	public void testFindByName() {
-		List<Medicine> medicines = medicineService.findByName(medicine.getName());
+		List<Medicine> medicines = dao.findByName(medicine.getName());
 
 		assertNotNull("medicines was null", medicines);
 		assertNotNull("array of medicines was null", medicines);
@@ -130,8 +122,9 @@ public class TestMedicineDao {
 	}
 	
 	@Test
+	@Transactional
 	public void testFindByGenericName() {
-		List<Medicine> medicines = medicineService.findByGenericName(medicine.getGenericName());
+		List<Medicine> medicines = dao.findByGenericName(medicine.getGenericName());
 
 		assertNotNull("medicines was null", medicines);
 		assertNotNull("array of medicines was null", medicines);
@@ -145,8 +138,9 @@ public class TestMedicineDao {
 	}
 	
 	@Test
+	@Transactional
 	public void testFindByLaboratory() {
-		List<Medicine> medicines = medicineService.findByLaboratory(medicine.getLaboratory());
+		List<Medicine> medicines = dao.findByLaboratory(medicine.getLaboratory());
 
 		assertNotNull("medicines was null", medicines);
 		assertNotNull("array of medicines was null", medicines);
@@ -164,8 +158,9 @@ public class TestMedicineDao {
 	// NOTE: Consulta punto 2b)
 
 	@Test
+	@Transactional
 	public void testQuantityLessTen() {
-		List<Medicine> medicines = medicineService.findByQuantityLessThan(10l);
+		List<Medicine> medicines = dao.findByQuantityLessThan(10l);
 
 		String debug = "less:\n";
 
@@ -183,12 +178,15 @@ public class TestMedicineDao {
 		
 		));
 
-		medicineService.saveOrUpdate(medicine);
+		dao.persist(medicine);
 
 	}
 
+
+	
 	@After
 	public void destroy() {
-		medicineService.delete(medicine);
+		dao.remove(medicine);
+		dao.remove(medicine2);
 	}
 }

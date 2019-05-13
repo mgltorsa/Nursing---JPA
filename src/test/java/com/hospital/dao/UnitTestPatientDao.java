@@ -1,4 +1,4 @@
-package com.hospital;
+package com.hospital.dao;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -6,6 +6,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDate;
 import java.util.List;
+
+import javax.transaction.Transactional;
 
 import org.junit.After;
 import org.junit.Before;
@@ -17,9 +19,9 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.hospital.dao.IPatientDao;
 import com.hospital.model.Patient;
 import com.hospital.model.UrgencyAttention;
-import com.hospital.services.IPatientService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -27,10 +29,10 @@ import lombok.extern.log4j.Log4j2;
 @ContextConfiguration("/applicationContext.xml")
 @Rollback(false)
 @Log4j2
-public class TestPatientDao {
+public class UnitTestPatientDao {
 
 	@Autowired
-	private IPatientService patientService;
+	private IPatientDao dao;
 
 	private Patient patient;
 
@@ -51,17 +53,18 @@ public class TestPatientDao {
 		
 		patient.getAttentions().add(attention3);
 
-		patientService.saveOrUpdate(patient);
+		dao.persist(patient);
 
 	}
 
 	@Test
+	@Transactional
 	public void testSave() {
 		Patient expected = new Patient("3312", "juan", "silva");
 		
-		patientService.saveOrUpdate(expected);
+		dao.persist(expected);
 
-		Patient newPatient = patientService.findByDocument(expected.getDocument());
+		Patient newPatient = dao.findByDocument(expected.getDocument());
 
 		String debug = "testSave -> " + newPatient;
 
@@ -73,17 +76,18 @@ public class TestPatientDao {
 		assertEquals(expected.getLastnames(), newPatient.getLastnames());
 		assertEquals(expected.getState(), newPatient.getState());
 		
-		patientService.delete(newPatient);
+		dao.remove(newPatient);
 	}
 
 	@Test
+	@Transactional
 	public void testMerge() {
 		Patient expected =patient;
 		expected.setLastnames("sanchez");
 
-		patientService.saveOrUpdate(expected);
+		dao.persist(expected);
 		
-		Patient newPatient = patientService.findByDocument(patient.getDocument());
+		Patient newPatient = dao.findByDocument(patient.getDocument());
 
 		String debug = "testMerge -> " + newPatient;
 
@@ -97,9 +101,10 @@ public class TestPatientDao {
 	}
 
 	@Test
+	@Transactional
 	public void testFindByDocument() {
 
-		Patient newPatient = patientService.findByDocument(patient.getDocument());
+		Patient newPatient = dao.findByDocument(patient.getDocument());
 
 		String debug = "Patient -> " + newPatient;
 
@@ -114,9 +119,10 @@ public class TestPatientDao {
 	}
 
 	@Test
+	@Transactional
 	public void testFindAllByDocument() {
 
-		List<Pair<Patient, Integer>> list = patientService.findAllPatientsByDocument();
+		List<Pair<Patient, Integer>> list = dao.findAllPatientsByDocument();
 
 		String debug = "List->\n";
 
@@ -134,8 +140,9 @@ public class TestPatientDao {
 	}
 
 	@Test
+	@Transactional
 	public void testFindByNames() {
-		List<Patient> patients = patientService.findByName(patient.getNames());
+		List<Patient> patients = dao.findByName(patient.getNames());
 		String debug = "Patients -> \n";
 
 		for (Patient patient : patients) {
@@ -156,8 +163,9 @@ public class TestPatientDao {
 	}
 
 	@Test
+	@Transactional
 	public void testFindByLastNames() {
-		List<Patient> patients = patientService.findByLastName(patient.getLastnames());
+		List<Patient> patients = dao.findByLastName(patient.getLastnames());
 		String debug = "Patients -> \n";
 
 		for (Patient patient : patients) {
@@ -179,9 +187,10 @@ public class TestPatientDao {
 
 	// NOTE: Test
 	@Test
+	@Transactional
 	public void testFindByAttentionsMoreThanLastMonth() {
 
-		List<Patient> patients = patientService.findByAttentionsMoreThanLastMonth(1l);
+		List<Patient> patients = dao.findByAttentionsMoreThanLastMonth(1l);
 		String debug = "Patients -> \n";
 
 		for (Patient patient : patients) {
@@ -204,7 +213,7 @@ public class TestPatientDao {
 
 	@After
 	public void destroy() {
-		patientService.delete(patient);
+		dao.remove(patient);
 	}
 
 }

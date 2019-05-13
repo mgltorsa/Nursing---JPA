@@ -58,7 +58,10 @@ public class SupplyDao implements ISupplyDao {
 
 	@Override
 	public Supply findById(Long consecutive) {
-		return entityManager.find(Supply.class, consecutive);
+		String q = "select s from Supply s where s.consecutive = :consecutive";
+		Query query = entityManager.createQuery(q);
+		query.setParameter("consecutive", consecutive);
+		return (Supply) query.getSingleResult();
 	}
 
 	@SuppressWarnings("unchecked")
